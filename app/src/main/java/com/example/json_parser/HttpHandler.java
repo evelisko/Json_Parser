@@ -27,17 +27,19 @@ public class HttpHandler {
             URL url = new URL(reqUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
+            Log.e(TAG, "setRequestMethod-GET");
             // read the response
             InputStream in = new BufferedInputStream(conn.getInputStream());
+            Log.e(TAG, "getInputStream");
             response = convertStreamToString(in);
         } catch (MalformedURLException e) {
-            Log.e(TAG, "MalformedURLException: " + e.getMessage());
+            Log.e(TAG, "makeServiceCall MalformedURLException: " + e.getMessage());
         } catch (ProtocolException e) {
-            Log.e(TAG, "ProtocolException: " + e.getMessage());
+            Log.e(TAG, "makeServiceCall ProtocolException: " + e.getMessage());
         } catch (IOException e) {
-            Log.e(TAG, "IOException: " + e.getMessage());
+            Log.e(TAG, "makeServiceCall IOException: " + e.getMessage());
         } catch (Exception e) {
-            Log.e(TAG, "Exception: " + e.getMessage());
+            Log.e(TAG, "makeServiceCall Exception: " + e.getMessage());
         }
         return response;
     }
