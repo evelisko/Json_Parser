@@ -20,7 +20,7 @@
             android:text="TextView" />
 
         <ListView
-            android:id="@+id/listViewCompanies"
+            android:id="@+id/lvCompanies"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

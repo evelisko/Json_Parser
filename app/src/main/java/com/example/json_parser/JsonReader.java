@@ -1,45 +1,57 @@
 package com.example.json_parser;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
-
 
 import java.io.IOException;
 import java.util.List;
-
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import java.util.EventObject;
 
 public class JsonReader {
 
     private static final String FILE_NAME = "http://www.mocky.io/v2/56fa31e0110000f920a72134";
 
-    private String TAG = JsonReader.class.getSimpleName();
+    private static String TAG = JsonReader.class.getSimpleName();
+
+//------------------------------------------------------------------------------------------------//
+    // region Создание события обработчика(Listener)события завершения считывания данных
+
+    public interface createCompanyListListener {
+        public void onCreateCompanyListListener(List<Company> companies);
+    }
+
+    private List<createCompanyListListener> listeners = new ArrayList<createCompanyListListener>();
+
+    private createCompanyListListener creatingList;
+
+    public void addListener(createCompanyListListener toAdd) {
+        listeners.add(toAdd);
+    }
+
+    public void setCompanyListListener(createCompanyListListener companyList) {
+        this.creatingList = companyList;
+    }
+// endregion
+//------------------------------------------------------------------------------------------------//
 
     // Выполняет считывание информации из - JSON
     public void readCompanyJSONFile() throws IOException {
-        new GetCompanies().execute();//  Запуск потока на выполнение.
+        new getCompanies().execute(); //  Запуск потока на выполнение.
     }
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Async task class to get json by making HTTP call
      */
-    private class GetCompanies extends AsyncTask<Void, Void, List<Company>> {
+    private class getCompanies extends AsyncTask<Void, Void, List<Company>> {
 
         @Override
         protected void onPreExecute() {
@@ -67,8 +79,7 @@ public class JsonReader {
         @Override
         protected void onPostExecute(List<Company> result) {
             super.onPostExecute(result);
-            Log.e(TAG, "onPostExecute");
-//              Выполняем анализ полученной строки.
+//      Геренрируем событие завершения считывания данных.
             creatingList.onCreateCompanyListListener(result);
         }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -83,9 +94,9 @@ public class JsonReader {
                 comps = new ArrayList<>();
 
                 JSONObject jsonRoot = new JSONObject(jString);
+                // считываем пока не будет достигнут конец файла.
+                for (int indCompany = 0; indCompany < jsonRoot.length(); indCompany++) {
 
-                for (int s = 0; s < jsonRoot.length(); s++) {
-                    // считываем пока не будет достигнут конец файла.
                     JSONObject jcmp = jsonRoot.getJSONObject("company");
 
                     JSONArray jsonArray = jcmp.getJSONArray("competences");
@@ -99,10 +110,10 @@ public class JsonReader {
                     JSONArray jsonArray1 = jcmp.getJSONArray("employees");
                     Employee[] employees = new Employee[jsonArray1.length()];
 
-                    for (int i = 0; i < jsonArray1.length(); i++) {
+                    for (int indEmployee = 0; indEmployee < jsonArray1.length(); indEmployee++) {
                         Employee emp = new Employee();
 
-                        JSONObject jEmployee = jsonArray1.getJSONObject(i);
+                        JSONObject jEmployee = jsonArray1.getJSONObject(indEmployee);
                         String str = jEmployee.getString("name");
                         emp.setName(str);
 
@@ -110,19 +121,28 @@ public class JsonReader {
                         JSONArray jSkills = jEmployee.getJSONArray("skills");
 
                         String[] skills = new String[jSkills.length()];
-                        for (int j = 0; j < jSkills.length(); j++) {
-                            skills[j] = jSkills.getString(j);
+                        for (int indSkille = 0; indSkille < jSkills.length(); indSkille++) {
+                            skills[indSkille] = jSkills.getString(indSkille);
                         }
                         emp.setSkills(skills);
 
-                        employees[i] = emp;
+                        employees[indEmployee] = emp;
                     }
 
-                    Company cmp = new Company(jcmp.getString("name"), jcmp.getString("age"), competences);
-                    cmp.setEmployee(employees);
+                    // Упорядочивание сотрудников компанни по алфавиту.
+                    // (Сортировка по методу пузырька)
+                    for (int indExtern = employees.length - 1; indExtern > 0; indExtern--) {
+                        for (int indInner = 0; indInner < indExtern; indInner++) {
+                            if (employees[indInner].getName().compareTo(employees[indInner + 1].getName()) > 0) {
+                                Employee emp = employees[indInner];
+                                employees[indInner] = employees[indInner + 1];
+                                employees[indInner + 1] = emp;
+                            }
+                        }
+                    }
+                    Company cmp = new Company(jcmp.getString("name"), jcmp.getString("age"), competences,employees);
                     comps.add(cmp);
                 }
-//------------------------------------------------------------------------------------------------//
             } finally {
                 if (streamReader != null) {
                     try {
@@ -142,53 +162,5 @@ public class JsonReader {
             Log.e(TAG, "importFromJSON Удачно");
             return comps;
         }
-///////////////////////////////////////////////////////////////////////////////////////////////////
     }
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-    public interface CreateCompanyListListener {
-        public void onCreateCompanyListListener(List<Company> companies);
-    }
-
-    private List<CreateCompanyListListener> listeners = new ArrayList<CreateCompanyListListener>();
-
-    private CreateCompanyListListener creatingList;
-
-    public void addListener(CreateCompanyListListener toAdd) {
-        listeners.add(toAdd);
-    }
-
-    public void setCompanyListListener(CreateCompanyListListener companyList) {
-        this.creatingList = companyList;
-    }
-//-----------------------------------------------------------------------------------------------//
-
-    public class CommandDataAvailiableEvent extends EventObject {
-
-        private String message;
-
-        public CommandDataAvailiableEvent(Object source, String message) {
-            super(source);
-            this.message = message;
-        }
-
-        public CommandDataAvailiableEvent(Object source) {
-            this(source, "");
-        }
-
-        public CommandDataAvailiableEvent(String s) {
-            this(null, s);
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getName() + "[source = " + getSource() + ", message = " + message + "]";
-        }
-    }
-//------------------------------------------------------------------------------------------------//
-
 }

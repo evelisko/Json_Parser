@@ -1,7 +1,7 @@
 package com.example.json_parser;
 
-import android.widget.Toast;
 import android.util.Log;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +11,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-
 
 
 public class HttpHandler {
@@ -28,7 +27,7 @@ public class HttpHandler {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             Log.e(TAG, "setRequestMethod-GET");
-            // read the response
+
             InputStream in = new BufferedInputStream(conn.getInputStream());
             Log.e(TAG, "getInputStream");
             response = convertStreamToString(in);
@@ -62,29 +61,7 @@ public class HttpHandler {
                 e.printStackTrace();
             }
         }
-       return sb.toString();
+        return sb.toString();
     }
-
-//    private static String readAll(Reader rd) throws IOException {
-//        StringBuilder sb = new StringBuilder();
-//        int cp;
-//        while ((cp = rd.read()) != -1) {
-//            sb.append((char) cp);
-//        }
-//        return sb.toString();
-//    }
-//
-//    private String readText(int resId) throws IOException {
-//        InputStream is = this.getResources().openRawResource(resId);
-//        BufferedReader br= new BufferedReader(new InputStreamReader(is));
-//        StringBuilder sb= new StringBuilder();
-//        String s= null;
-//        while((s = br.readLine())!= null){
-//            sb.append(s);
-//            sb.append("\n");
-//        }
-//        return sb.toString();
-//    }
-
 
 }
