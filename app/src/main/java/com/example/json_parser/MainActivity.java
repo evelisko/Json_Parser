@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     ListView lvCompanies;
     JsonReader jsonReader;
     SwipeRefreshLayout mSwipeRefreshLayout;
+    private boolean dataIsReaded;
 
     private String TAG = MainActivity.class.getSimpleName();
     private static final String FILE_NAME = "http://www.mocky.io/v2/56fa31e0110000f920a72134";
@@ -40,15 +41,17 @@ public class MainActivity extends AppCompatActivity {
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
-
+        dataIsReaded = true;
         lvCompanies = (ListView) findViewById(R.id.lvCompanies);
 
         jsonReader = new JsonReader();
 
         JsonReader.createCompanyListListener createCompanyListListener = new JsonReader.createCompanyListListener() {
             public void onCreateCompanyListListener(List<Company> companies) {
+
+                dataIsReaded = true;
                 createCompanyList(companies);
-            }
+           }
         };
         jsonReader.setCompanyListListener(createCompanyListListener);
 
@@ -57,17 +60,20 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void readDataFromJSON() {
-        if (!isOnline()) {
-            Toast.makeText(this, "Нет подключения к сети", Toast.LENGTH_LONG).show();
-            Log.e("MayTage", "Нет подключения к сети");
-        } else {
-            Log.e("MayTage", "Устройство подключено");
-            try {
-                jsonReader.readCompanyJSONFile();
-            } catch (Exception e) {
-                Toast.makeText(this, "Ошибка подключения " + e.getMessage(), Toast.LENGTH_LONG).show();
-                Log.e("MayTage", "Ошибка подключения");
-                e.printStackTrace();
+        if (dataIsReaded == true) {
+            if (!isOnline()) {
+                Toast.makeText(this, "Нет подключения к сети", Toast.LENGTH_LONG).show();
+                Log.e("MayTage", "Нет подключения к сети");
+            } else {
+                Log.e("MayTage", "Устройство подключено");
+                try {
+                    dataIsReaded = false;
+                    jsonReader.readCompanyJSONFile();
+                } catch (Exception e) {
+                    Toast.makeText(this, "Ошибка подключения " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Log.e("MayTage", "Ошибка подключения");
+                    e.printStackTrace();
+                }
             }
         }
     }
