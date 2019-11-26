@@ -20,7 +20,8 @@ AsyncTask - реализован в `JsonReader`.
 
 Для того, чтобы осуществлять запросы из Http в файл манифеста были добавлены разрешения.   
 
-   `<uses-permission android:name="android.permission.INTERNET"/>`
-   `<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>`
+`<uses-permission android:name="android.permission.INTERNET"/>`
+
+`<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>`
 
 `android:networkSecurityConfig="@xml/network_security_config"`
