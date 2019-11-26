@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
+import android.widget.AbsListView;
 import android.widget.ListView;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -30,19 +31,34 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        dataIsReaded = true;
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeСontainer);
+
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-
                 Log.e("MayTage", "Swipe ");
                 readDataFromJSON();
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
-        dataIsReaded = true;
+
         lvCompanies = (ListView) findViewById(R.id.lvCompanies);
+
+        lvCompanies.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {  }
+
+             // Делаем так чтобы Swipe срабатывал только тогда,
+             // когда ролик прокрутки находится в самом начале списка.
+             // Чтобы не мешать пермещаться по списку вверх-вниз.
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if (lvCompanies.getChildAt(0) != null) {
+                   mSwipeRefreshLayout.setEnabled(lvCompanies.getFirstVisiblePosition() == 0 && lvCompanies.getChildAt(0).getTop() == 0);
+                }
+            }
+        });
 
         jsonReader = new JsonReader();
 
@@ -91,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     private void createCompanyList(List<Company> companies) {
         try {
             if (companies != null) {
-
+                mSwipeRefreshLayout.setEnabled(true);
                 CompanyAdapter adapter = new CompanyAdapter(this, R.layout.company_layout, companies);
                 lvCompanies.setAdapter(adapter);
 
